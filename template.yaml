@@ -1,0 +1,55 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: mlops-template
+  title: mlops template
+  description: An example template for the scaffolder that creates a simple mlops git repo
+  tags:
+  - python
+  - mlops
+  - data_science
+spec:
+  owner: nayakosheen@gmail.com
+  type: service
+  parameters:
+    - title: Inject metadata
+      id: inject-app-metadata
+      required:
+        - name
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: template
+      name: Create skeleton
+      action: fetch:cookiecutter
+      input:
+        url: ./skeleton
+        values:
+          appData: ${{ parameters.appData }}
+
+    # This step publishes the contents of the working directory to GitHub.
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        repoUrl: github.com?owner=osheenn&repo=${{ parameters.appData.appName }}
+        description: ${{ parameters.appData.description }}
+        repoVisibility: public
+
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        appData: ${{ parameters.appData }}
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
