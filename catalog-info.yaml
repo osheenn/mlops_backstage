@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mlops_backstage
+  annotations:
+    github.com/project-slug: osheenn/mlops_backstage
+spec:
+  type: other
+  lifecycle: unknown
+  owner: osheenn
